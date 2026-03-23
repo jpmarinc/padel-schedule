@@ -5,6 +5,9 @@ on:
     - cron: '0 6 * * 2'   # Martes 6am UTC (lunes noche Argentina) — post partido
   workflow_dispatch:        # También ejecutable manualmente desde GitHub Actions
 
+permissions:
+  contents: write
+
 jobs:
   backup:
     runs-on: ubuntu-latest
