@@ -48,6 +48,34 @@ Crear claude.md + comentarios.md + memoria.md + roadmap.md adaptados al proyecto
 
 ---
 
+## Sesión 2026-03-23 (tarde)
+
+### [C-07] Restricción de exactamente 4 jugadores en sorteo `✅`
+En la selección de asistencia no podían ser más de 4 ni menos de 4 para sortear.
+- Contador X/4 visible, checkboxes deshabilitados al llegar a 4
+
+### [C-08] Validación de fecha duplicada en sorteo `✅`
+No permitir dos sorteos para la misma fecha. Auto-sugerir próximo lunes.
+- Warning naranja si la fecha ya tiene un sorteo guardado
+- `suggestedDate()` calcula automáticamente el lunes siguiente al último partido
+
+### [C-09] Bug en ceremonia — campeón incorrecto `✅`
+La ceremonia mostraba a Mosso (2°) como campeón en vez de Awad (1°).
+Causa: `.reverse().slice(0,4)` cortaba el 1° lugar. Fix: `.slice(0,4).reverse()`
+También fix "Revelar undefined" al llegar al último paso.
+
+### [C-10] Nombres de temporada duplicados `✅`
+Al crear temporada nueva, el nombre se auto-genera como "Temporada X — 2026" (editable).
+
+### [C-11] Delete jugador galleta `✅`
+Botón 🗑 solo visible para galletas con 0 partidos jugados. Con confirmación.
+
+### [C-12] Deploy a producción `✅`
+App deployada en Netlify con Supabase como BD.
+URL: https://padel-scheduler.netlify.app/
+
+---
+
 ## Cómo usar este archivo
 
 - **Juan Pablo:** agrega feedback nuevo con fecha y número `[C-XX]`

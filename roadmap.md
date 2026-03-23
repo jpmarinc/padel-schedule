@@ -7,6 +7,17 @@ Para feedback puntual sobre bugs o mejoras, usar `comentarios.md`.
 
 ## En progreso / Siguiente sesión
 
+### [R-07] Migrar datos localStorage → Supabase `Media`
+Si se jugaron partidos antes del deploy, los datos están solo en el navegador local.
+Opciones: exportar JSON desde DevTools → importar via SQL Editor, o función de migración en el app.
+
+### [R-08] Estadísticas por jugador `Baja`
+Con quién ha jugado más, posición frecuente (Drive/Revés), racha actual.
+
+---
+
+## Backlog
+
 ### [R-01] Resultados con lógica de tenis `Alta`
 Reemplazar el input de score simple por ingreso set a set.
 - Formato: hasta 3 sets, cada set con score (ej: 6-4 / 3-6 / 7-6)
@@ -44,16 +55,6 @@ Pantalla de ceremonia de resultados al cerrar:
 
 ## Backlog
 
-### [R-06] Deploy Netlify `Baja (bloqueado por R-01)`
-1. Ejecutar `schema.sql` en Supabase dashboard
-2. Configurar `.env.local` con anon key
-3. `npm run build` + subir `dist/` a Netlify
-4. Configurar variables de entorno en Netlify dashboard
-
-### [R-07] Migrar datos localStorage → Supabase `Baja`
-Función de exportar datos del localStorage a SQL para cargar en Supabase.
-Útil cuando hayan jugado algunas fechas en local y quieran persistir en la nube.
-
 ### [R-08] Estadísticas por jugador `Baja`
 En tab Ranking o nuevo tab: con quién ha jugado más, posición más frecuente (Drive/Revés), racha de victorias/derrotas.
 
@@ -75,6 +76,9 @@ Si en algún lunes se juegan 2 partidos (ej: todos presentes + tiempo extra), so
 | — | Estado del sorteo persistente entre tabs | 001 |
 | — | Fix bug posiciones duplicadas | 001 |
 | — | Framework de documentación | 001 |
+| R-01..R-05 | Tenis, editar, popup cierre, ceremonia, temporadas cerradas | 002 |
+| R-06 | Deploy Netlify + Supabase | 003 |
+| C-07..C-12 | Bugs ceremonia, 4 jugadores, fecha duplicada, delete galleta | 003 |
 
 ---
 

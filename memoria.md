@@ -2,6 +2,62 @@
 
 ---
 
+## Sesión 003 — 2026-03-23
+
+### Contexto de inicio
+Continuación. 4 bugs reportados por Juan Pablo + deploy pendiente + delete galleta.
+
+### Decisiones tomadas
+- **Supabase:** proyecto nuevo dedicado a padel (`ivlhihttyspjgmynowwc`) — separado de mi-trading que estaba por pausarse por inactividad
+- **Deploy:** Netlify (estático, free, sin servidor) — descartado coupling con Fly.io de mi-trading
+- **BD obligatoria:** localStorage solo no alcanza — datos deben ser accesibles desde cualquier dispositivo del grupo
+- **Delete galleta:** solo permitido si `pj === 0` — si tiene historial, se maneja con toggle Activo/Inactivo
+- **Supabase keys:** usar nueva Publishable key (`sb_publishable_...`) + URL `https://PROJECT.supabase.co`
+- **RLS:** habilitado con policy `public_all` para rol `anon` en las 5 tablas — app personal sin auth
+
+### Lo construido en esta sesión
+
+**Bugs resueltos:**
+- **Ceremonia bug crítico ✅** — `SeasonCeremony.jsx`: `.reverse().slice(0,4)` → `.slice(0,4).reverse()`. Ahora muestra correctamente a Awad (1°) como campeón. Fix `isDone = step >= ordered.length - 1` elimina "Revelar undefined"
+- **Exactamente 4 jugadores ✅** — `DrawTab.jsx`: contador `X/4`, checkboxes deshabilitados al llegar a 4, botón Sortear requiere exactamente 4
+- **Fecha duplicada + sugerencia lunes ✅** — `DrawTab.jsx`: `suggestedDate()` auto-calcula próximo lunes tras el último partido. Warning naranja si fecha ya tiene sorteo. Botón bloqueado hasta cambiar fecha
+- **Nombre temporada auto-generado ✅** — `AdminTab.jsx`: `buildSeasonName()` genera "Temporada X — 2026" al abrir el formulario. Editable antes de confirmar
+
+**Delete galleta ✅**
+- `storage.js`: nueva función `deletePlayer(id)`
+- `useData.js`: expone `deletePlayer`
+- `AdminTab.jsx`: botón 🗑 visible solo si `playerPJ(id) === 0`, con `window.confirm`
+
+**Supabase integration ✅**
+- `src/lib/db.js`: capa async unificada — Supabase si hay env vars, localStorage fallback automático
+- `useData.js`: completamente async con `Promise.all` para carga paralela
+- `schema.sql`: columna `sets JSONB` en `padel_match_results` (reemplaza `score_team1/score_team2`)
+- RLS policies corridas en Supabase SQL Editor
+
+**Deploy ✅**
+- GitHub: repo `jpmarinc/padel-schedule` (SSH)
+- Netlify: `padel-scheduler.netlify.app` conectado a GitHub, auto-deploy en push a main
+- `netlify.toml`: build config + SPA redirect + `SECRETS_SCAN_OMIT_KEYS`
+- Env vars en Netlify: `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` (Publishable key)
+
+### Bugs/blockers encontrados en deploy
+- `.env` commiteado → sacado con `git rm --cached`, agregado a `.gitignore`
+- `.env.example` con JWT-like placeholder → Netlify lo flaggeaba como secret real → reemplazado con texto plano
+- `VITE_SUPABASE_URL` mal copiada (URL del dashboard en vez del API endpoint) → corregida a `https://ivlhihttyspjgmynowwc.supabase.co`
+- Env vars cargadas solo en contexto "Local development" en vez de "Production" → corregidas al contexto correcto
+- RLS bloqueaba todas las queries → solucionado con policies `public_all` para rol `anon`
+
+### Estado al cerrar
+- App en producción: **https://padel-scheduler.netlify.app/**
+- Supabase: proyecto `ivlhihttyspjgmynowwc`, 5 tablas con RLS habilitado
+- Cada push a `main` triggerrea auto-deploy en Netlify
+
+### Pendientes
+- R-07: Migrar datos de localStorage → Supabase (si se jugaron partidos antes del deploy)
+- R-08: Estadísticas por jugador
+
+---
+
 ## Sesión 002 — 2026-03-23 (continuación)
 
 ### Contexto de inicio
