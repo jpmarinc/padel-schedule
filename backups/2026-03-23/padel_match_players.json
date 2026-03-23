@@ -1,0 +1,4 @@
+[{"id":"27b138c1-3e1e-4100-bec5-31db37603e3e","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"b1f4cfed-7112-485b-bee9-02f884f8e0af","team":1,"position":"drive","is_free":false}, 
+ {"id":"c2cf61a9-ccf3-4455-bebb-161832f90341","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"a8aecc9a-03e1-40e3-9fd7-a885ad52d522","team":1,"position":"reves","is_free":false}, 
+ {"id":"1fb95415-5723-4cc5-bbd7-81b2e3d3557e","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"fd886305-15d4-43d4-81c1-22f27c3e7069","team":2,"position":"reves","is_free":false}, 
+ {"id":"9de04365-f584-4d6a-81a6-b3909a8055c1","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"77b2b3b1-5de8-4d05-a97c-3b2ac7eda390","team":2,"position":"drive","is_free":false}]
