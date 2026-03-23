@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # TODO jun-2026: migrar a versión con Node.js 24
 
       - name: Export Supabase tables
         env:
