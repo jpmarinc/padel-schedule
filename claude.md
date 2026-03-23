@@ -17,13 +17,38 @@ Contexto rápido del proyecto, reglas de trabajo y patrones de error registrados
 
 ---
 
+## Flujo de trabajo — desarrollo → producción
+
+**REGLA:** Siempre trabajar en local, testear, luego pushear a GitHub. Netlify auto-deploya desde `main`.
+
+```
+1. Hacer cambios en ~/Desktop/padel-schedule
+2. Probar en local:  npm run dev  (usa localStorage — no toca Supabase)
+3. Para testear con Supabase en local: crear .env.local con las keys reales
+4. Cuando funciona: git add + git commit + git push origin main
+5. Netlify auto-deploya en ~30 segundos
+6. Verificar en https://padel-scheduler.netlify.app/
+```
+
+**Variables de entorno locales** (crear `.env.local`, nunca commitear):
+```
+VITE_SUPABASE_URL=https://ivlhihttyspjgmynowwc.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_rcx28JMc04iLFo16GVUDzQ_gnJtjjnC
+```
+
+**NUNCA** hacer cambios directamente en producción sin testear en local primero.
+
+---
+
 ## Arquitectura del proyecto
 
 **Proyecto:** Campeonato de pádel personal — sorteo semanal, ranking con 3 modos, historial de resultados por temporada.
 
-**Stack:** React + Vite · localStorage (fallback) · Supabase JS (opcional) · Deploy Netlify
+**Stack:** React + Vite · Supabase (primario) · localStorage (fallback automático) · Deploy Netlify
 
-**Supabase:** mismo proyecto que mi-trading (`fwcjolnhghqqbclrbdrc`) — usar tablas con prefijo `padel_`
+**Supabase:** proyecto dedicado `ivlhihttyspjgmynowwc` — URL: `https://ivlhihttyspjgmynowwc.supabase.co`
+**Key:** Publishable key (`sb_publishable_...`) — legacy JWT key ya no se usa
+**RLS:** habilitado, policy `public_all` para rol `anon` en 5 tablas `padel_*`
 
 ### Archivos principales
 
