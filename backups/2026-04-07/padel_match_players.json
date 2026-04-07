@@ -1,0 +1,8 @@
+[{"id":"27b138c1-3e1e-4100-bec5-31db37603e3e","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"b1f4cfed-7112-485b-bee9-02f884f8e0af","team":1,"position":"drive","is_free":false}, 
+ {"id":"c2cf61a9-ccf3-4455-bebb-161832f90341","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"a8aecc9a-03e1-40e3-9fd7-a885ad52d522","team":1,"position":"reves","is_free":false}, 
+ {"id":"1fb95415-5723-4cc5-bbd7-81b2e3d3557e","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"fd886305-15d4-43d4-81c1-22f27c3e7069","team":2,"position":"reves","is_free":false}, 
+ {"id":"9de04365-f584-4d6a-81a6-b3909a8055c1","match_id":"2df719e5-7e4f-48bc-a0fd-741c6da852bd","player_id":"77b2b3b1-5de8-4d05-a97c-3b2ac7eda390","team":2,"position":"drive","is_free":false}, 
+ {"id":"4b8ca2ed-b1a5-47ba-b34a-aadf72a5f3ae","match_id":"a6f6f7e5-280e-464d-a060-b1e8be7888c7","player_id":"fd886305-15d4-43d4-81c1-22f27c3e7069","team":1,"position":"drive","is_free":false}, 
+ {"id":"530df7e2-ae77-4eb1-aec9-3af99f78e953","match_id":"a6f6f7e5-280e-464d-a060-b1e8be7888c7","player_id":"b1f4cfed-7112-485b-bee9-02f884f8e0af","team":1,"position":"reves","is_free":false}, 
+ {"id":"4f8baba2-f929-4e31-b741-e7a933873ba3","match_id":"a6f6f7e5-280e-464d-a060-b1e8be7888c7","player_id":"350d6e3b-4835-4fa0-8894-af7cb1b60536","team":2,"position":"drive","is_free":false}, 
+ {"id":"414e40ca-0c37-4188-b216-e82d15ce9302","match_id":"a6f6f7e5-280e-464d-a060-b1e8be7888c7","player_id":"70b65cd7-277f-429b-980c-b2a9594c5496","team":2,"position":"reves","is_free":false}]
