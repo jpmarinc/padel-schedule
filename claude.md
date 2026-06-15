@@ -58,8 +58,8 @@ VITE_SUPABASE_ANON_KEY=sb_publishable_rcx28JMc04iLFo16GVUDzQ_gnJtjjnC
 | `src/hooks/useData.js` | Hook central — todos los datos, operaciones y lógica de ranking |
 | `src/lib/storage.js` | Persistencia localStorage — seed de 5 jugadores, todas las operaciones CRUD |
 | `src/lib/supabase.js` | Cliente Supabase opcional — si no está configurado, el app usa storage.js |
-| `src/lib/drawUtils.js` | Algoritmo de sorteo inteligente — evita repetir parejas, rota posiciones |
-| `src/components/DrawTab.jsx` | Sorteo del lunes — asistencia → animación → confirmar/descartar |
+| `src/lib/drawUtils.js` | Algoritmo de sorteo + `matchCountsForPoints()` (regla de quórum, fuente única) |
+| `src/components/DrawTab.jsx` | Sorteo del lunes — 2 modos: 🎲 sortear automático / ✋ armar manual (equipo y lado por jugador) |
 | `src/components/RankingTab.jsx` | Tabla de posiciones + selector de modo de ranking |
 | `src/components/HistoryTab.jsx` | Historial de fechas + registro de resultados |
 | `src/components/AdminTab.jsx` | Jugadores galleta, config temporada, cierre |
@@ -93,6 +93,8 @@ Lunes llega → Tab Sorteo
 ### Regla de quórum
 
 Si hay menos de 4 titulares presentes (ej: 3 titulares + 1 galleta) → el partido se juega y sortea normalmente, pero la fecha **no suma puntos** al ranking. Solo cuentan las fechas con los 4 jugadores titulares. Badge naranja "Sin puntos" visible en historial y sorteo.
+
+**Implementación:** la regla se deriva **en vivo** desde los jugadores reales del partido vía `matchCountsForPoints()` en `drawUtils.js` (fuente única usada por ranking, Historial y Sorteo). No depende del flag `counts_for_points` guardado, así que es retroactiva y auto-corrige fechas viejas si cambia el umbral (`QUORUM_REQUIRED`).
 
 ### Algoritmo de sorteo (drawUtils.js)
 

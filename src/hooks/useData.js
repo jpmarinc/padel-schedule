@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import * as db from '../lib/db'
-import { QUORUM_REQUIRED } from '../constants'
+import { matchCountsForPoints } from '../lib/drawUtils'
 
 export function useData() {
   const [players,      setPlayers]      = useState([])
@@ -83,19 +83,32 @@ export function useData() {
   // ── Sorteo ────────────────────────────────────────────────────
   const saveDraw = useCallback(async (matchDate, dateNumber, presentIds, drawResult) => {
     if (!season) return
-    const titulares        = players.filter(p => !p.is_galleta && p.active)
-    const presentTitulares = presentIds.filter(id => titulares.some(t => t.id === id))
-    const countsForPoints  = presentTitulares.length >= QUORUM_REQUIRED
-
     const match = await db.upsertMatch({
       season_id: season.id,
       match_date: matchDate,
       date_number: dateNumber,
-      counts_for_points: countsForPoints,
+      counts_for_points: matchCountsForPoints(drawResult, players),
       status: 'drawn',
     })
 
     if (match) await db.saveMatchPlayers(match.id, drawResult)
+    refresh()
+    return match
+  }, [season, players, refresh])
+
+  // Crear un partido manualmente, asignando equipo y lado a cada jugador.
+  // assignments: [{ player_id, team, position, is_free }] — 4 filas no-libres.
+  const createManualMatch = useCallback(async (matchDate, dateNumber, assignments) => {
+    if (!season) return
+    const match = await db.upsertMatch({
+      season_id: season.id,
+      match_date: matchDate,
+      date_number: dateNumber,
+      counts_for_points: matchCountsForPoints(assignments, players),
+      status: 'drawn',
+    })
+
+    if (match) await db.saveMatchPlayers(match.id, assignments)
     refresh()
     return match
   }, [season, players, refresh])
@@ -119,7 +132,7 @@ export function useData() {
     const titulares     = players.filter(p => !p.is_galleta)
     const seasonMatches = matches.filter(m => m.season_id === targetSeason.id)
     const playedMatches = seasonMatches.filter(m =>
-      m.status === 'played' && m.counts_for_points
+      m.status === 'played' && matchCountsForPoints(matchPlayers[m.id] || [], players)
     )
 
     const stats = titulares.map(player => {
@@ -215,6 +228,7 @@ export function useData() {
     closeSeason,
     createSeason,
     saveDraw,
+    createManualMatch,
     saveResult,
     refresh,
   }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { POSITIONS } from '../constants'
 import { calcSetsStats } from '../lib/storage'
+import { matchCountsForPoints } from '../lib/drawUtils'
 
 // ── Tennis Score Input ────────────────────────────────────────
 function TennisScoreInput({ matchId, existing, players, matchPlayers, onSave, onCancel }) {
@@ -230,7 +231,7 @@ export default function HistoryTab({ matches, matchPlayers, results, players, sa
                 <div className="match-meta">
                   <span className="match-num">Fecha #{match.date_number}</span>
                   <span className="match-date">{match.match_date}</span>
-                  {!match.counts_for_points && (
+                  {!matchCountsForPoints(mp, players) && (
                     <span className="no-points-badge small">Sin puntos</span>
                   )}
                 </div>

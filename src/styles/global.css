@@ -413,6 +413,69 @@ html, body {
   border: 1px solid rgba(255,109,0,0.2);
 }
 
+/* Mode toggle: sortear / armar manual */
+.mode-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-btn.active {
+  background: var(--green-dark);
+  color: var(--text);
+}
+
+/* Formulario de armado manual */
+.manual-form { display: flex; flex-direction: column; gap: 16px; }
+
+.manual-team {
+  background: var(--bg-card2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.manual-slot { display: flex; align-items: center; gap: 10px; }
+
+.manual-slot .pos-tag {
+  min-width: 56px;
+  text-align: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.manual-select {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
 /* Spinning animation */
 .spinning-container {
   display: flex;

@@ -36,7 +36,7 @@ export default function App() {
     matches, matchPlayers, results,
     ranking, addGalleta, updatePlayer, deletePlayer,
     updateSeasonConfig, closeSeason, createSeason,
-    saveDraw, saveResult,
+    saveDraw, createManualMatch, saveResult,
   } = useData()
 
   const handleCloseSeason = (championId) => {
@@ -88,6 +88,7 @@ export default function App() {
             matches={matches}
             matchPlayers={matchPlayers}
             saveDraw={saveDraw}
+            createManualMatch={createManualMatch}
             pendingDraw={pendingDraw}
             setPendingDraw={setPendingDraw}
           />

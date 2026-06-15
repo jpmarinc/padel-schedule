@@ -6,6 +6,26 @@
 //   3. Si una pareja se repite, se rotan sus posiciones respecto al último partido juntos
 // ============================================================
 
+import { QUORUM_REQUIRED } from '../constants'
+
+/**
+ * Regla de quórum — fuente única de verdad.
+ * Una fecha suma puntos solo si entre los jugadores no-libres del partido
+ * hay al menos QUORUM_REQUIRED titulares (no galletas).
+ * Se deriva en vivo desde los jugadores del partido, no de un flag guardado,
+ * para que el ranking sea siempre correcto y retroactivo.
+ * @param {Array} matchPlayerRows - filas { player_id, is_free }
+ * @param {Array} players         - jugadores con { id, is_galleta }
+ */
+export function matchCountsForPoints(matchPlayerRows, players) {
+  const titulares = (matchPlayerRows || []).filter(mp => {
+    if (mp.is_free) return false
+    const p = players.find(pl => pl.id === mp.player_id)
+    return p && !p.is_galleta
+  })
+  return titulares.length >= QUORUM_REQUIRED
+}
+
 function shuffle(arr) {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {
