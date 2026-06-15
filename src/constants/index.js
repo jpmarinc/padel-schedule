@@ -24,8 +24,8 @@ export const RANKING_MODES = {
   },
 }
 
-export const MIN_TITULARES_FOR_POINTS = 3  // mínimo para que la fecha sume puntos
+export const MIN_TITULARES_FOR_POINTS = 4  // mínimo para que la fecha sume puntos
 
-export const QUORUM_REQUIRED = 3  // si hay menos titulares presentes, no suma
+export const QUORUM_REQUIRED = 4  // si hay menos de 4 titulares presentes, no suma
 
 export const POSITIONS_LIST = ['drive', 'reves']

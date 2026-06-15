@@ -75,7 +75,7 @@ Mario San Martin · Juan Carlos Awad · Jose Luis Mosso · Nicolas Gonzalez · J
 ```
 Lunes llega → Tab Sorteo
   → Marcar asistencia (titulares + galletas)
-  → Validar quórum (≥3 titulares = cuenta para ranking)
+  → Validar quórum (4 titulares = cuenta para ranking)
   → Sortear: algoritmo elige la pareja menos repetida, rota posiciones
   → Confirmar sorteo → guardado en localStorage/Supabase
   → Post partido: Tab Historial → ingresar resultado → puntos calculados
@@ -92,7 +92,7 @@ Lunes llega → Tab Sorteo
 
 ### Regla de quórum
 
-Si < 3 titulares presentes → el partido se juega y sortea normalmente, pero la fecha **no suma puntos** al ranking. Badge naranja "Sin puntos" visible en historial y sorteo.
+Si hay menos de 4 titulares presentes (ej: 3 titulares + 1 galleta) → el partido se juega y sortea normalmente, pero la fecha **no suma puntos** al ranking. Solo cuentan las fechas con los 4 jugadores titulares. Badge naranja "Sin puntos" visible en historial y sorteo.
 
 ### Algoritmo de sorteo (drawUtils.js)
 
