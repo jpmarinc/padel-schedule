@@ -2,6 +2,37 @@
 
 ---
 
+## Sesión 004 — 2026-06-15
+
+### Contexto de inicio
+Juan Pablo reportó que no aparecía ningún partido en la app y creía que el respaldo se había perdido.
+
+### Incidente Supabase (resuelto)
+- **Causa raíz:** el proyecto Supabase free `ivlhihttyspjgmynowwc` estaba **pausado por inactividad** (free tier se pausa tras ~1 semana sin uso). DNS daba NXDOMAIN → la app no tenía backend de dónde leer.
+- **Backups NO se perdieron:** el repo local estaba 4 commits atrás. En `origin/main` había backups hasta `2026-04-14`. El workflow de GitHub Actions venía fallando desde el `2026-04-21` (justo cuando se pausó Supabase).
+- **Solución:** Juan Pablo reactivó el proyecto desde el dashboard. Tras ~3 min levantó (pasó 521 → 404 → 200) con **todos los datos intactos** (no hizo falta restaurar). Al pushear, el backup automático `2026-06-09` ya volvió a correr.
+- **Aprendizaje:** el backup workflow falla en silencio si Supabase no responde; queda pendiente hacerlo ruidoso + validar JSON (ver roadmap). Para evitar pausa: usar la app o pingear semanalmente.
+
+### Decisiones tomadas
+- **Regla de quórum a 4 titulares:** `QUORUM_REQUIRED` y `MIN_TITULARES_FOR_POINTS` de 3 → 4. Una fecha solo suma si están los 4 titulares.
+- **Derivar `counts_for_points` en vivo** (no confiar en el flag guardado): nuevo helper `matchCountsForPoints()` en `drawUtils.js` como fuente única, usado por ranking, Historial y Sorteo. Retroactivo y auto-corrige si cambia el umbral. Validado contra Supabase: fechas 2 y 3 (3 titulares + Aland galleta) dejaron de sumar — Juan Pablo Marin bajó de 4 PG a 2 PG.
+- **Armado manual de partidos:** toggle en tab Sorteo (🎲 Sortear / ✋ Armar manual), no sección de Admin.
+
+### Lo construido en esta sesión
+- **Regla 4 titulares ✅** — `constants/index.js` (commit `434ca69`)
+- **Ranking respeta la regla en vivo ✅** — `useData.js` ranking + `saveDraw` usan `matchCountsForPoints()`; `HistoryTab.jsx` badge "Sin puntos" derivado
+- **Crear partido manual ✅** — `DrawTab.jsx`: 4 slots (Pareja 1/2 × Drive/Revés) con dropdowns sin duplicados, badge de quórum en vivo, crea match `drawn` → resultado en Historial. `useData.js`: nueva `createManualMatch()`. `App.jsx` cablea el prop. Galletas seleccionables (marcadas "(galleta)") — si se usan, la fecha no suma. CSS en `global.css` (`.mode-toggle`, `.manual-form`). (commit `e5307f3`)
+- Verificado visualmente en local con preview (sorteo manual + galleta) y empíricamente contra Supabase.
+
+### Pendientes
+- R-09: Hacer el backup workflow ruidoso (validar respuesta JSON, avisar si falla). Hoy falla en silencio.
+- Lint preexistente: `sets_t1/sets_t2` sin usar en `HistoryTab.jsx:223` (no bloquea build).
+
+### Estado al cerrar
+- Producción operativa: **https://padel-scheduler.netlify.app/** · Supabase reactivado con datos intactos.
+
+---
+
 ## Sesión 003 — 2026-03-23
 
 ### Contexto de inicio

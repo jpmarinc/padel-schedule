@@ -76,6 +76,23 @@ URL: https://padel-scheduler.netlify.app/
 
 ---
 
+## Sesión 2026-06-15
+
+### [C-13] App sin partidos — Supabase pausado `✅`
+No aparecía ningún partido y parecía que el respaldo se había perdido.
+Causa: proyecto Supabase free pausado por inactividad (DNS NXDOMAIN). Backups intactos en `origin/main` (hasta 2026-04-14). Juan Pablo reactivó el proyecto → datos recuperados sin restaurar.
+
+### [C-14] Quórum debe exigir 4 titulares (no 3) `✅`
+Una fecha solo cuenta para el ranking con los 4 jugadores titulares. `QUORUM_REQUIRED = 4`.
+
+### [C-15] El ranking debe considerar la regla `✅`
+El ranking contaba fechas viejas mal marcadas (3 titulares + galleta). Se centralizó en `matchCountsForPoints()` y se deriva en vivo → fechas 2 y 3 dejaron de sumar. Retroactivo.
+
+### [C-16] Crear partido manual con equipo y lado específico `✅`
+Toggle "✋ Armar manual" en tab Sorteo: asignar cada jugador a Pareja 1/2 y Drive/Revés. Galletas seleccionables (no suman). Crea la fecha lista para cargar resultado en Historial.
+
+---
+
 ## Cómo usar este archivo
 
 - **Juan Pablo:** agrega feedback nuevo con fecha y número `[C-XX]`

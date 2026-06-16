@@ -7,6 +7,12 @@ Para feedback puntual sobre bugs o mejoras, usar `comentarios.md`.
 
 ## En progreso / Siguiente sesión
 
+### [R-11] Hardening del backup workflow `Alta`
+El backup semanal (`.github/workflows/backup.yml`) falla en silencio si Supabase no responde (estuvo fallando 2026-04-21 → 2026-06-02 sin avisar, mientras el proyecto estaba pausado).
+- Validar que la respuesta sea JSON válido antes de commitear
+- Fallar ruidosamente / notificar si una tabla no exporta
+- (Opcional) Pingear Supabase para evitar la pausa por inactividad del free tier
+
 ### [R-07] Migrar datos localStorage → Supabase `Media`
 Si se jugaron partidos antes del deploy, los datos están solo en el navegador local.
 Opciones: exportar JSON desde DevTools → importar via SQL Editor, o función de migración en el app.
@@ -79,6 +85,7 @@ Si en algún lunes se juegan 2 partidos (ej: todos presentes + tiempo extra), so
 | R-01..R-05 | Tenis, editar, popup cierre, ceremonia, temporadas cerradas | 002 |
 | R-06 | Deploy Netlify + Supabase | 003 |
 | C-07..C-12 | Bugs ceremonia, 4 jugadores, fecha duplicada, delete galleta | 003 |
+| C-13..C-16 | Recuperación Supabase pausado, quórum 4 titulares + en vivo, armado manual | 004 |
 
 ---
 
