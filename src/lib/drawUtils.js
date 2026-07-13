@@ -53,6 +53,27 @@ function lastMatchIndexTogether(p1id, p2id, matchHistory) {
 }
 
 /**
+ * Penalización de una pareja = cuánto conviene EVITAR juntarla otra vez.
+ * Suma, por cada partido pasado donde jugaron juntos, un peso (i + 1) que
+ * es mayor cuanto más reciente fue → castiga tanto la FRECUENCIA (más veces
+ * juntos = más penalización) como la RECENCIA (juntos hace poco pesa más).
+ * Nunca jugaron juntos → 0 (pareja ideal). Menor penalización = preferida.
+ */
+function pairPenalty(p1id, p2id, matchHistory) {
+  let penalty = 0
+  matchHistory.forEach((h, i) => {
+    const mps = h.players || []
+    const team1ids = mps.filter(p => p.team === 1 && !p.is_free).map(p => p.player_id)
+    const team2ids = mps.filter(p => p.team === 2 && !p.is_free).map(p => p.player_id)
+    const together =
+      (team1ids.includes(p1id) && team1ids.includes(p2id)) ||
+      (team2ids.includes(p1id) && team2ids.includes(p2id))
+    if (together) penalty += i + 1
+  })
+  return penalty
+}
+
+/**
  * Para un par (p1, p2), calcula la posición que cada uno debería jugar
  * en función de su último partido juntos (rotar respecto al anterior).
  * Si nunca jugaron juntos, asigna aleatoriamente.
@@ -85,10 +106,10 @@ function resolvePositions(p1, p2, matchHistory) {
 
 /**
  * Para 4 jugadores existen exactamente 3 posibles emparejamientos.
- * Retorna los 3 con su score de "frescura" (menor = más fresco = preferido).
+ * Retorna los 3 con su score (menor = parejas menos repetidas = preferido).
  *
- * Score = suma de (matchHistory.length - lastMatchIdx) por pareja.
- * Si nunca jugaron juntos → contribuye 0.
+ * Score = suma de las penalizaciones de sus 2 parejas (ver pairPenalty).
+ * Nunca jugaron juntos → contribuye 0.
  */
 function scorePairings(playing, matchHistory) {
   const [a, b, c, d] = playing
@@ -100,14 +121,8 @@ function scorePairings(playing, matchHistory) {
   ]
 
   return options.map(opt => {
-    const score1 = (() => {
-      const idx = lastMatchIndexTogether(opt.p1[0].id, opt.p1[1].id, matchHistory)
-      return idx === -1 ? 0 : (matchHistory.length - idx)
-    })()
-    const score2 = (() => {
-      const idx = lastMatchIndexTogether(opt.p2[0].id, opt.p2[1].id, matchHistory)
-      return idx === -1 ? 0 : (matchHistory.length - idx)
-    })()
+    const score1 = pairPenalty(opt.p1[0].id, opt.p1[1].id, matchHistory)
+    const score2 = pairPenalty(opt.p2[0].id, opt.p2[1].id, matchHistory)
     return { ...opt, score: score1 + score2 }
   })
 }
