@@ -112,6 +112,11 @@ Si hay menos de 4 titulares presentes (ej: 3 titulares + 1 galleta) → el parti
 **Causa:** `shuffle(['drive','reves','drive','reves'])` podía producir `[drive, drive, reves, reves]`, asignando 2 drives a la misma pareja.
 **Solución:** Asignar posiciones por pareja independientemente en `drawUtils.js` → `resolvePositions()` garantiza siempre 1 drive + 1 revés por par.
 
+### Bug sorteo premiaba parejas repetidas (2026-06-16)
+**Causa:** `scorePairings()` puntuaba con `matchHistory.length - lastMatchIdx`. Como el algoritmo elige el score **menor**, una dupla jugada **recientemente** (idx alto → score bajo) resultaba preferida → re-juntaba las mismas parejas. Efecto real: Juan Pablo + Mario juntos 5 de 7 fechas.
+**Solución:** Nuevo `pairPenalty()` que suma, por cada partido pasado donde jugaron juntos, un peso `(i+1)` mayor cuanto más reciente → castiga frecuencia **y** recencia; nunca juntos = 0. Score de un emparejamiento = suma de las penalizaciones de sus 2 parejas.
+**Validación (Monte Carlo, código real):** máx repeticiones de una pareja 6.25 → 3.38; temporadas con alguna pareja repetida ≥5x del 97.1% → 0.2%; parejas distintas usadas 9.78 → 9.98 de 10. Objetivo (maximizar partidos distintos) cumplido.
+
 ---
 
 ## Fuentes de verdad

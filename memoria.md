@@ -2,6 +2,30 @@
 
 ---
 
+## Sesión 005 — 2026-06-16
+
+### Contexto de inicio
+Juan Pablo notó que le tocaba muchas veces con Mario y pidió validar si el sorteo respetaba las reglas.
+
+### Diagnóstico
+- **Bug real, no coincidencia.** `scorePairings()` usaba `matchHistory.length - lastMatchIdx`: una dupla reciente daba score bajo y, como el algoritmo elige el menor, **premiaba repetir parejas recientes**. Datos reales: JP + Mario juntos 5 de 7 fechas (las últimas 4 seguidas).
+- Probado con reconstrucción de la fecha 8: el score elegía el emparejamiento que mantenía a JP+Mario (score 1) sobre separarlos.
+
+### Lo construido
+- **Fix del sorteo ✅** — `drawUtils.js`: nuevo `pairPenalty()` (acumula `i+1` por cada partido juntos → castiga frecuencia + recencia; nunca juntos = 0). `scorePairings()` lo usa. (commit `0587f5d`). Ver "Patrones de error" en claude.md.
+- **Validación Monte Carlo** — se importó el código **real** a Node (módulos temp con el `import` de constants removido) y se simuló viejo vs nuevo:
+  - 200 temp × 12 fechas: máx repeticiones de una pareja 6.25 → 3.38; parejas distintas 9.78 → 9.98/10.
+  - 3000 temp: temporadas con alguna pareja repetida ≥5x del **97.1% → 0.2%**; JP+Mario ≥4 seguidas del 7.8% → **0%**.
+  - Conclusión: el promedio de veces-juntos (~2.4) lo fija la combinatoria; el bug era el **amontonamiento**, ahora eliminado.
+
+### Nota
+- El fix aplica a **sorteos nuevos**; las 8 fechas jugadas no se tocaron (tienen resultados).
+
+### Pendientes
+- R-11 sigue abierto (backup workflow ruidoso).
+
+---
+
 ## Sesión 004 — 2026-06-15
 
 ### Contexto de inicio
