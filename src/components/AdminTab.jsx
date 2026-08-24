@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { isOfficialMatch } from '../lib/drawUtils'
 
 function buildSeasonName(allSeasons) {
   const year = new Date().getFullYear()
@@ -18,8 +19,12 @@ export default function AdminTab({
   const [newSeasonName, setNewSeasonName] = useState('')
   const [newSeasonDate, setNewSeasonDate] = useState(new Date().toISOString().split('T')[0])
 
-  const playedCount = (matches || []).filter(m => m.status === 'played' && m.season_id === season?.id).length
-  const remaining   = (season?.total_dates || 12) - playedCount
+  // Solo cuentan las fechas OFICIALES (quórum + no amistoso).
+  const playedCount = (matches || []).filter(m =>
+    m.status === 'played' && m.season_id === season?.id &&
+    isOfficialMatch(m, (matchPlayers || {})[m.id] || [], players)
+  ).length
+  const remaining   = Math.max(0, (season?.total_dates || 12) - playedCount)
 
   const titulares = players.filter(p => !p.is_galleta)
   const galletas  = players.filter(p => p.is_galleta)
@@ -123,13 +128,17 @@ export default function AdminTab({
               <span className="admin-value">{season.started_at}</span>
             </div>
             <div className="admin-field">
-              <label>Total fechas</label>
+              <label>Fechas oficiales (objetivo)</label>
               <input
                 type="number" min="1" max="30"
                 value={season.total_dates}
                 onChange={e => updateSeasonConfig({ total_dates: Number(e.target.value) })}
                 className="input-inline"
               />
+            </div>
+            <div className="admin-field">
+              <label>Oficiales jugadas</label>
+              <span className="admin-value">{playedCount} / {season.total_dates}</span>
             </div>
           </div>
 

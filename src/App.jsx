@@ -53,7 +53,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header season={season} allSeasons={allSeasons} matches={matches} />
+      <Header season={season} allSeasons={allSeasons} matches={matches} matchPlayers={matchPlayers} players={players} />
 
       <nav className="tab-nav">
         {TABS.map(t => (

@@ -20,8 +20,9 @@ export default function RankingTab({
 
   const ranked = ranking(displaySeason?.id)
 
-  const autoN = Math.min(...ranked.filter(r => r.pj > 0).map(r => r.pj), Infinity)
-  const effectiveN = mode === 'best_n' ? (bestN || (isFinite(autoN) ? autoN : '?')) : null
+  // Fallback de N cuando no está fijado: total de partidos oficiales jugados.
+  const officialPlayed = ranked[0]?.officialPlayed ?? 0
+  const effectiveN = mode === 'best_n' ? (ranked[0]?.bestN ?? bestN ?? officialPlayed) : null
 
   const closedSeasons = allSeasons.filter(s => !s.active)
 
@@ -82,15 +83,13 @@ export default function RankingTab({
                   onChange={e => updateSeasonConfig({ best_n: e.target.value ? Number(e.target.value) : null })}
                   className="select-inline"
                 >
-                  <option value="">Auto ({isFinite(autoN) ? autoN : '?'})</option>
+                  <option value="">Auto — todos los oficiales ({officialPlayed})</option>
                   {[3,4,5,6,7,8,9,10,11,12].map(n => (
                     <option key={n} value={n}>{n}</option>
                   ))}
                 </select>
               </label>
-              {effectiveN !== '?' && (
-                <span className="config-hint">Contando los mejores {effectiveN} de cada jugador</span>
-              )}
+              <span className="config-hint">Contando los mejores {effectiveN} de cada jugador</span>
             </div>
           )}
 

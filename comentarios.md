@@ -93,6 +93,22 @@ Toggle "✋ Armar manual" en tab Sorteo: asignar cada jugador a Pareja 1/2 y Dri
 
 ---
 
+## Sesión 2026-08-24
+
+### [C-17] Solo las fechas oficiales cuentan para la temporada `✅`
+El contador X/12 y el bloqueo del Sorteo contaban TODOS los partidos (incluidos galletas). Ahora solo cuentan los **oficiales**: quórum de 4 titulares Y no amistoso. Nuevo helper `isOfficialMatch()` como fuente única (Header, ranking, Sorteo, Admin).
+
+### [C-18] "Mejores N" no tomaba los mejores resultados de Mario `✅`
+El N automático usaba `Math.min(...PJ de todos)` → tomaba el mínimo del grupo (6) y descartaba buenos resultados de quien jugó más. Ahora N lo **fija Admin**; si está en Auto, cuenta todos los oficiales jugados (nunca descarta).
+
+### [C-19] Editar resultados ya jugados `✅`
+Verificado: el botón "Editar" en Historial abre el formulario pre-cargado, guarda y persiste. Ya existía (C-02); confirmado end-to-end.
+
+### [C-20] Seguir sorteando partidos que no cuentan `✅`
+Se quitó el bloqueo del Sorteo al completar las fechas. Toggle "Amistoso — no cuenta para la temporada" siempre disponible; se fuerza automático si la temporada ya está completa o hay reservas. Nuevo flag `is_friendly` en `padel_matches` (requiere migración en Supabase).
+
+---
+
 ## Cómo usar este archivo
 
 - **Juan Pablo:** agrega feedback nuevo con fecha y número `[C-XX]`

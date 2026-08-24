@@ -1,5 +1,11 @@
-export default function Header({ season, allSeasons, matches }) {
-  const played   = matches.filter(m => m.status === 'played' && m.season_id === season?.id).length
+import { isOfficialMatch } from '../lib/drawUtils'
+
+export default function Header({ season, allSeasons, matches, matchPlayers, players }) {
+  // Solo cuentan las fechas OFICIALES (quórum + no amistoso).
+  const played   = matches.filter(m =>
+    m.status === 'played' && m.season_id === season?.id &&
+    isOfficialMatch(m, matchPlayers?.[m.id] || [], players || [])
+  ).length
   const total    = season?.total_dates || 12
   const progress = total > 0 ? Math.round((played / total) * 100) : 0
   const closedCount = (allSeasons || []).filter(s => !s.active).length

@@ -2,6 +2,37 @@
 
 ---
 
+## Sesión 006 — 2026-08-24
+
+### Contexto de inicio
+La temporada mostraba 12/12 fechas jugadas y el Sorteo bloqueado. Juan Pablo pidió: (1) que solo cuenten las fechas **oficiales** (no galletas), (2) arreglar que "Mejores N" no tomaba los mejores resultados de Mario, (3) poder editar resultados ya jugados, (4) poder seguir sorteando partidos que no cuentan para la temporada.
+
+### Decisión de diseño (validada con Juan Pablo)
+- **Oficial = quórum (4 titulares) Y no amistoso.** Galletas/reservas → sin quórum → no cuenta (automático). Amistoso → flag manual `is_friendly`.
+- **Mejores N:** N lo fija Admin. Si no está fijado, fallback = total de oficiales jugados (nunca descarta). Se eliminó el viejo `Math.min(...PJ)` que tomaba el mínimo del grupo (origen del reclamo de Mario).
+- **Seguir sorteando:** sin bloqueo. Toggle "Amistoso" siempre disponible; si la temporada ya completó sus fechas oficiales o hay reservas, es amistoso automático.
+
+### Lo construido
+- `drawUtils.js` — nuevo `isOfficialMatch(match, mp, players)` (fuente única de "cuenta para la temporada").
+- `useData.js` — ranking filtra por `isOfficialMatch`; `best_n` fijo desde Admin con fallback = oficiales jugados; `saveDraw`/`createManualMatch` reciben y guardan `is_friendly`.
+- `Header.jsx` / `App.jsx` — progreso X/total cuenta solo oficiales.
+- `DrawTab.jsx` — quitado el bloqueo por `date_number`; toggle "Amistoso" (auto-forzado y bloqueado al completar la temporada); badges reflejan amistoso vs sin-quórum.
+- `RankingTab.jsx` / `AdminTab.jsx` — N destacado; "Total fechas" → "Fechas oficiales (objetivo)" + contador de oficiales jugadas.
+- `HistoryTab.jsx` — badge azul "Amistoso" vs naranja "Sin puntos".
+- `schema.sql` — columna `is_friendly BOOLEAN DEFAULT FALSE` + migración.
+- **Editar resultados (R3):** ya existía (C-02); verificado end-to-end en navegador (abre pre-cargado, guarda, persiste).
+
+### Verificación (localStorage, dataset simulado 8 oficiales + 1 galleta + 1 amistoso)
+- Header 8/12 (galleta y amistoso excluidos); al bajar objetivo a 8 → 8/8 y Sorteo fuerza amistoso pero sigue permitiendo sortear.
+- Sorteo amistoso confirmado → guardado con `is_friendly:true`, `counts_for_points:false`, header no sube. Sin errores de consola.
+- Build limpio.
+
+### Pendiente crítico para deploy
+- **Correr en Supabase antes de deployar:** `ALTER TABLE padel_matches ADD COLUMN IF NOT EXISTS is_friendly BOOLEAN DEFAULT FALSE;` (el código escribe `is_friendly`; sin la columna, upsertMatch falla en producción).
+- No se pusheó — a la espera de revisión de Juan Pablo.
+
+---
+
 ## Sesión 005 — 2026-06-16
 
 ### Contexto de inicio

@@ -26,6 +26,21 @@ export function matchCountsForPoints(matchPlayerRows, players) {
   return titulares.length >= QUORUM_REQUIRED
 }
 
+/**
+ * ¿Un partido es OFICIAL? — fuente única de verdad para "cuenta para la temporada".
+ * Es oficial si tiene quórum (4 titulares, no reservas/galletas) Y no fue
+ * marcado como amistoso. Un partido con galletas nunca tiene quórum, así que
+ * automáticamente NO es oficial; y el flag is_friendly permite marcar amistoso
+ * un partido aunque tenga 4 titulares.
+ * @param {Object} match           - fila del partido con { is_friendly }
+ * @param {Array}  matchPlayerRows - filas { player_id, is_free }
+ * @param {Array}  players         - jugadores con { id, is_galleta }
+ */
+export function isOfficialMatch(match, matchPlayerRows, players) {
+  if (match?.is_friendly) return false
+  return matchCountsForPoints(matchPlayerRows, players)
+}
+
 function shuffle(arr) {
   const a = [...arr]
   for (let i = a.length - 1; i > 0; i--) {

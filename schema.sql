@@ -32,11 +32,15 @@ CREATE TABLE IF NOT EXISTS padel_matches (
   id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   season_id           UUID REFERENCES padel_seasons(id) ON DELETE CASCADE,
   match_date          DATE NOT NULL,
-  date_number         INT NOT NULL,  -- 1 al 12
-  counts_for_points   BOOLEAN DEFAULT TRUE,  -- false si no hay quórum
+  date_number         INT NOT NULL,  -- secuencia global de partidos
+  counts_for_points   BOOLEAN DEFAULT TRUE,  -- false si no hay quórum o es amistoso
+  is_friendly         BOOLEAN DEFAULT FALSE, -- amistoso: no cuenta para la temporada
   status              TEXT DEFAULT 'pending',  -- 'pending' | 'drawn' | 'played'
   created_at          TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migración para bases existentes (correr una vez en Supabase):
+--   ALTER TABLE padel_matches ADD COLUMN IF NOT EXISTS is_friendly BOOLEAN DEFAULT FALSE;
 
 -- Jugadores por partido (resultado del sorteo)
 CREATE TABLE IF NOT EXISTS padel_match_players (

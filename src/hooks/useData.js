@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import * as db from '../lib/db'
-import { matchCountsForPoints } from '../lib/drawUtils'
+import { matchCountsForPoints, isOfficialMatch } from '../lib/drawUtils'
 
 export function useData() {
   const [players,      setPlayers]      = useState([])
@@ -81,13 +81,14 @@ export function useData() {
   }, [refresh])
 
   // ── Sorteo ────────────────────────────────────────────────────
-  const saveDraw = useCallback(async (matchDate, dateNumber, presentIds, drawResult) => {
+  const saveDraw = useCallback(async (matchDate, dateNumber, presentIds, drawResult, isFriendly = false) => {
     if (!season) return
     const match = await db.upsertMatch({
       season_id: season.id,
       match_date: matchDate,
       date_number: dateNumber,
-      counts_for_points: matchCountsForPoints(drawResult, players),
+      is_friendly: !!isFriendly,
+      counts_for_points: !isFriendly && matchCountsForPoints(drawResult, players),
       status: 'drawn',
     })
 
@@ -98,13 +99,14 @@ export function useData() {
 
   // Crear un partido manualmente, asignando equipo y lado a cada jugador.
   // assignments: [{ player_id, team, position, is_free }] — 4 filas no-libres.
-  const createManualMatch = useCallback(async (matchDate, dateNumber, assignments) => {
+  const createManualMatch = useCallback(async (matchDate, dateNumber, assignments, isFriendly = false) => {
     if (!season) return
     const match = await db.upsertMatch({
       season_id: season.id,
       match_date: matchDate,
       date_number: dateNumber,
-      counts_for_points: matchCountsForPoints(assignments, players),
+      is_friendly: !!isFriendly,
+      counts_for_points: !isFriendly && matchCountsForPoints(assignments, players),
       status: 'drawn',
     })
 
@@ -131,8 +133,9 @@ export function useData() {
 
     const titulares     = players.filter(p => !p.is_galleta)
     const seasonMatches = matches.filter(m => m.season_id === targetSeason.id)
+    // Solo cuentan las fechas OFICIALES: quórum de 4 titulares y no amistoso.
     const playedMatches = seasonMatches.filter(m =>
-      m.status === 'played' && matchCountsForPoints(matchPlayers[m.id] || [], players)
+      m.status === 'played' && isOfficialMatch(m, matchPlayers[m.id] || [], players)
     )
 
     const stats = titulares.map(player => {
@@ -179,9 +182,11 @@ export function useData() {
 
     const mode  = targetSeason.ranking_mode || 'best_n'
     const minPJ = targetSeason.min_pj || 6
-    const minPJPlayed = Math.min(...stats.filter(s => s.pj > 0).map(s => s.pj), Infinity)
+    // N para "Mejores N": lo fija Admin (targetSeason.best_n). Si no está fijado,
+    // el fallback cuenta TODOS los oficiales jugados (nunca descarta resultados).
+    const officialPlayed = playedMatches.length
     const bestN = mode === 'best_n'
-      ? (targetSeason.best_n || (isFinite(minPJPlayed) ? minPJPlayed : 0))
+      ? (targetSeason.best_n || officialPlayed)
       : 0
 
     const ranked = stats.map(s => {
@@ -198,7 +203,7 @@ export function useData() {
       }
 
       const winRate = s.pj > 0 ? Math.round((s.pg / s.pj) * 100) : 0
-      return { ...s, ptsContados, eligible, winRate, bestN }
+      return { ...s, ptsContados, eligible, winRate, bestN, officialPlayed }
     })
 
     return ranked.sort((a, b) => {

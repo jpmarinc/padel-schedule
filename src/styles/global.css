@@ -268,6 +268,12 @@ html, body {
 
 .no-points-badge.small { padding: 1px 6px; font-size: 0.68rem; }
 
+.no-points-badge.friendly {
+  background: rgba(41,121,255,0.12);
+  color: var(--blue);
+  border-color: rgba(41,121,255,0.25);
+}
+
 .pos-tag {
   border-radius: 99px;
   padding: 2px 9px;
@@ -298,7 +304,39 @@ html, body {
   font-weight: 700;
 }
 
+.date-badge.friendly {
+  background: rgba(41,121,255,0.1);
+  color: var(--blue);
+}
+
 .attendance-section { display: flex; flex-direction: column; gap: 12px; }
+
+/* ---- Amistoso toggle ---- */
+.friendly-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+}
+
+.friendly-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.friendly-toggle input { width: 16px; height: 16px; accent-color: var(--blue); cursor: pointer; }
+.friendly-toggle.on .friendly-toggle-text { color: var(--blue); }
+.friendly-toggle.locked { cursor: default; opacity: 0.85; }
+.friendly-toggle.locked input { cursor: default; }
+.friendly-hint { font-size: 0.72rem; color: var(--text-dim); padding-left: 24px; }
 
 .date-picker-row {
   display: flex;

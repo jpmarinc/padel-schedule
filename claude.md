@@ -88,13 +88,22 @@ Lunes llega → Tab Sorteo
 |---|---|
 | `absolute` | Suma total de victorias |
 | `winrate` | Victorias / PJ × 100 (requiere mínimo PJ para clasificar) |
-| `best_n` | Top N resultados por jugador (N auto = mínimo PJ del grupo, o fijo) |
+| `best_n` | Top N resultados por jugador. N lo **fija Admin**; si está en Auto, N = total de oficiales jugados (nunca descarta). **Nunca** el mínimo PJ del grupo |
 
-### Regla de quórum
+### Partido oficial vs. no-oficial (fuente única)
 
-Si hay menos de 4 titulares presentes (ej: 3 titulares + 1 galleta) → el partido se juega y sortea normalmente, pero la fecha **no suma puntos** al ranking. Solo cuentan las fechas con los 4 jugadores titulares. Badge naranja "Sin puntos" visible en historial y sorteo.
+Un partido es **oficial** (cuenta para la temporada y el ranking) si cumple **ambas**:
+1. **Quórum:** ≥4 titulares no-libres (no galletas/reservas). Derivado en vivo con `matchCountsForPoints()`.
+2. **No amistoso:** el flag `is_friendly` del partido es falso.
 
-**Implementación:** la regla se deriva **en vivo** desde los jugadores reales del partido vía `matchCountsForPoints()` en `drawUtils.js` (fuente única usada por ranking, Historial y Sorteo). No depende del flag `counts_for_points` guardado, así que es retroactiva y auto-corrige fechas viejas si cambia el umbral (`QUORUM_REQUIRED`).
+Fuente única: `isOfficialMatch(match, matchPlayers, players)` en `drawUtils.js`, usada por ranking (`useData.js`), Header, Sorteo y Admin.
+
+- **Sin quórum** (galleta/reserva en cancha) → badge naranja **"Sin puntos"**. Automático y retroactivo (no depende del flag guardado; auto-corrige si cambia `QUORUM_REQUIRED`).
+- **Amistoso** (`is_friendly`) → badge azul **"Amistoso"**. Flag manual en el Sorteo; se fuerza automático cuando la temporada ya completó sus `total_dates` oficiales o hay reservas.
+
+El contador de fechas (Header, "objetivo" de Admin) y el bloqueo de fin de temporada cuentan **solo oficiales**. El Sorteo nunca se bloquea: al completar las fechas oficiales, los nuevos partidos son amistosos y siguen registrándose.
+
+`total_dates` = objetivo de fechas **oficiales**. `date_number` es solo una secuencia global (incluye amistosos), no el nº de fecha oficial.
 
 ### Algoritmo de sorteo (drawUtils.js)
 
@@ -116,6 +125,16 @@ Si hay menos de 4 titulares presentes (ej: 3 titulares + 1 galleta) → el parti
 **Causa:** `scorePairings()` puntuaba con `matchHistory.length - lastMatchIdx`. Como el algoritmo elige el score **menor**, una dupla jugada **recientemente** (idx alto → score bajo) resultaba preferida → re-juntaba las mismas parejas. Efecto real: Juan Pablo + Mario juntos 5 de 7 fechas.
 **Solución:** Nuevo `pairPenalty()` que suma, por cada partido pasado donde jugaron juntos, un peso `(i+1)` mayor cuanto más reciente → castiga frecuencia **y** recencia; nunca juntos = 0. Score de un emparejamiento = suma de las penalizaciones de sus 2 parejas.
 **Validación (Monte Carlo, código real):** máx repeticiones de una pareja 6.25 → 3.38; temporadas con alguna pareja repetida ≥5x del 97.1% → 0.2%; parejas distintas usadas 9.78 → 9.98 de 10. Objetivo (maximizar partidos distintos) cumplido.
+
+---
+
+### Bug "Mejores N" tomaba el mínimo del grupo (2026-08-24)
+**Causa:** el N automático era `Math.min(...PJ de todos los jugadores)`. Quien jugó más partidos veía descartados sus buenos resultados por encima del mínimo del grupo (reclamo de Mario, 9 PJ vs. N=6).
+**Solución:** N lo fija Admin (`season.best_n`). Fallback en Auto = total de partidos **oficiales** jugados (`playedMatches.length`), que nunca descarta resultados. `useData.js` → `ranking()`.
+
+### Contador de temporada incluía galletas/amistosos (2026-08-24)
+**Causa:** Header/Admin/bloqueo de Sorteo contaban `status==='played'` sin filtrar oficialidad; el Sorteo se bloqueaba por `date_number > total_dates`.
+**Solución:** todo cuenta vía `isOfficialMatch()`; se agregó flag `is_friendly` y toggle en el Sorteo; se quitó el bloqueo por `date_number`.
 
 ---
 

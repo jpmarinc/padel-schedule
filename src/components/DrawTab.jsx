@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { POSITIONS, QUORUM_REQUIRED } from '../constants'
-import { generateDraw } from '../lib/drawUtils'
+import { generateDraw, isOfficialMatch } from '../lib/drawUtils'
 
 function PlayerBadge({ player, position }) {
   const pos = POSITIONS[position]
@@ -66,6 +66,14 @@ export default function DrawTab({
     ? Math.max(...seasonMatches.map(m => m.date_number)) + 1
     : 1
 
+  // Fechas OFICIALES ya ocupadas (sorteadas o jugadas, con quórum y no amistoso).
+  const totalDates       = season?.total_dates || 12
+  const officialUsed     = seasonMatches.filter(m =>
+    m.status !== 'pending' && isOfficialMatch(m, matchPlayers[m.id] || [], players)
+  ).length
+  const officialRemaining = Math.max(0, totalDates - officialUsed)
+  const seasonComplete    = officialRemaining <= 0
+
   // Estado local solo para la animación de spinning
   const [spinning, setSpinning] = useState(false)
   const [showDiscard, setShowDiscard] = useState(false)
@@ -78,7 +86,12 @@ export default function DrawTab({
     matchDate: suggestedDate(seasonMatches),
     present: {},
     draw: null,
+    isFriendly: false,
   }
+
+  // Amistoso efectivo: forzado si la temporada ya completó sus fechas oficiales,
+  // o si el usuario activó el toggle manualmente.
+  const isFriendly = seasonComplete || !!state.isFriendly
 
   // Validar si ya existe un partido guardado para la fecha seleccionada
   const dateAlreadyUsed = seasonMatches.some(
@@ -108,11 +121,12 @@ export default function DrawTab({
     activePlayers.filter(p => !manualIds.includes(p.id) || manualSlots[slotKey] === p.id)
 
   // ¿Sumará puntos? Se deriva de los jugadores reales del partido (sorteo o manual),
-  // misma regla que usa el ranking.
+  // misma regla que usa el ranking: quórum de titulares Y no amistoso.
   const drawTits = state.draw
     ? [...state.draw.team1, ...state.draw.team2].filter(d => !d.player.is_galleta).length
     : 0
-  const matchWillCount = state.draw ? drawTits >= QUORUM_REQUIRED : quorumOk
+  const quorumForDraw  = state.draw ? drawTits >= QUORUM_REQUIRED : quorumOk
+  const matchWillCount = quorumForDraw && !isFriendly
 
   const handleSortear = useCallback(() => {
     setSpinning(true)
@@ -142,9 +156,9 @@ export default function DrawTab({
       ...draw.team2.map(d => ({ player_id: d.player.id, team: d.team, position: d.position, is_free: false })),
       ...draw.free.map(p  => ({ player_id: p.id, team: 0, position: 'drive', is_free: true })),
     ]
-    saveDraw(matchDate, nextDateNumber, presentIds, drawResult)
+    saveDraw(matchDate, nextDateNumber, presentIds, drawResult, isFriendly)
     setState({ step: 'confirm' })
-  }, [state, nextDateNumber, presentIds, saveDraw, setState])
+  }, [state, nextDateNumber, presentIds, saveDraw, setState, isFriendly])
 
   const handleCreateManual = () => {
     if (!manualComplete || dateAlreadyUsed) return
@@ -159,7 +173,7 @@ export default function DrawTab({
         .map(s => ({ player: getP(manualSlots[s.key]), team: 2, position: s.position })),
       free: [],
     }
-    createManualMatch(state.matchDate, nextDateNumber, assignments)
+    createManualMatch(state.matchDate, nextDateNumber, assignments, isFriendly)
     setState({ step: 'confirm', draw, matchDate: state.matchDate })
     setManualSlots(EMPTY_SLOTS)
   }
@@ -183,19 +197,14 @@ export default function DrawTab({
       <p>No hay temporada activa. Configura una desde Admin.</p>
     </div>
   )
-  if (nextDateNumber > (season.total_dates || 12)) return (
-    <div className="empty-state">
-      <span className="empty-icon">🏆</span>
-      <p>¡Las {season.total_dates} fechas de la temporada ya fueron jugadas!</p>
-      <p className="empty-sub">Puedes cerrar la temporada desde Admin.</p>
-    </div>
-  )
 
   return (
     <div className="draw-tab">
       <div className="draw-header">
         <h2 className="section-title">Sorteo del Lunes</h2>
-        <span className="date-badge">Fecha #{nextDateNumber}</span>
+        <span className={`date-badge ${isFriendly ? 'friendly' : ''}`}>
+          {isFriendly ? 'Amistoso' : `Fecha #${officialUsed + 1}`}
+        </span>
       </div>
 
       {/* ── Step 1: Asistencia ── */}
@@ -212,6 +221,24 @@ export default function DrawTab({
             {dateAlreadyUsed && (
               <span className="date-warn-badge">⚠ Ya hay un sorteo para esta fecha</span>
             )}
+          </div>
+
+          {/* Amistoso: no cuenta para la temporada */}
+          <div className="friendly-row">
+            <label className={`friendly-toggle ${isFriendly ? 'on' : ''} ${seasonComplete ? 'locked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={isFriendly}
+                disabled={seasonComplete}
+                onChange={e => setState({ isFriendly: e.target.checked })}
+              />
+              <span className="friendly-toggle-text">Amistoso — no cuenta para la temporada</span>
+            </label>
+            <span className="friendly-hint">
+              {seasonComplete
+                ? `Temporada completa (${officialUsed}/${totalDates} fechas oficiales) — los partidos nuevos son amistosos`
+                : `Quedan ${officialRemaining} de ${totalDates} fechas oficiales`}
+            </span>
           </div>
 
           <div className="mode-toggle">
@@ -267,10 +294,12 @@ export default function DrawTab({
           )}
 
           <div className="quorum-info">
-            <div className={`quorum-badge ${quorumOk ? 'ok' : 'warn'}`}>
-              {quorumOk
-                ? `✓ Quórum OK — ${presentTits.length} titulares`
-                : `⚠ Solo ${presentTits.length} titulares — la fecha NO sumará puntos`}
+            <div className={`quorum-badge ${matchWillCount ? 'ok' : 'warn'}`}>
+              {isFriendly
+                ? '≈ Amistoso — no cuenta para la temporada'
+                : quorumOk
+                  ? `✓ Contará para la temporada — ${presentTits.length} titulares`
+                  : `⚠ Solo ${presentTits.length} titulares — la fecha NO sumará puntos`}
             </div>
             {!atMax && (
               <div className="quorum-badge warn">
@@ -323,10 +352,12 @@ export default function DrawTab({
               ))}
 
               <div className="quorum-info">
-                <div className={`quorum-badge ${manualTits >= QUORUM_REQUIRED ? 'ok' : 'warn'}`}>
-                  {manualTits >= QUORUM_REQUIRED
-                    ? `✓ Sumará puntos — ${manualTits} titulares`
-                    : `⚠ Solo ${manualTits} titulares — la fecha NO sumará puntos`}
+                <div className={`quorum-badge ${manualTits >= QUORUM_REQUIRED && !isFriendly ? 'ok' : 'warn'}`}>
+                  {isFriendly
+                    ? '≈ Amistoso — no cuenta para la temporada'
+                    : manualTits >= QUORUM_REQUIRED
+                      ? `✓ Sumará puntos — ${manualTits} titulares`
+                      : `⚠ Solo ${manualTits} titulares — la fecha NO sumará puntos`}
                 </div>
               </div>
 
@@ -351,7 +382,9 @@ export default function DrawTab({
         <div className="draw-result-section">
           {!matchWillCount && (
             <div className="quorum-badge warn mb-16">
-              ⚠ Esta fecha NO sumará puntos (quórum insuficiente)
+              {isFriendly
+                ? '≈ Amistoso — esta fecha NO cuenta para la temporada'
+                : '⚠ Esta fecha NO sumará puntos (quórum insuficiente)'}
             </div>
           )}
 
@@ -415,8 +448,8 @@ export default function DrawTab({
           <div className="confirmed-icon">🎾</div>
           <h3 className="confirmed-title">¡Sorteo guardado!</h3>
           <p className="confirmed-sub">
-            Fecha #{nextDateNumber - 1} · {state.matchDate}
-            {!matchWillCount && <span className="no-points-badge"> · Sin puntos</span>}
+            {isFriendly ? 'Amistoso' : `Fecha #${officialUsed}`} · {state.matchDate}
+            {!matchWillCount && !isFriendly && <span className="no-points-badge"> · Sin puntos</span>}
           </p>
           {state.draw && (
             <div className="teams-container small">

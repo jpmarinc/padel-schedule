@@ -231,9 +231,11 @@ export default function HistoryTab({ matches, matchPlayers, results, players, sa
                 <div className="match-meta">
                   <span className="match-num">Fecha #{match.date_number}</span>
                   <span className="match-date">{match.match_date}</span>
-                  {!matchCountsForPoints(mp, players) && (
+                  {match.is_friendly ? (
+                    <span className="no-points-badge small friendly">Amistoso</span>
+                  ) : !matchCountsForPoints(mp, players) ? (
                     <span className="no-points-badge small">Sin puntos</span>
-                  )}
+                  ) : null}
                 </div>
                 <div className="match-meta-right">
                   <span className={`status-badge ${cls}`}>{label}</span>
