@@ -138,15 +138,14 @@ export function useData() {
       m.status === 'played' && isOfficialMatch(m, matchPlayers[m.id] || [], players)
     )
 
+    // Detalle por partido de cada jugador (favor/contra de sets y juegos).
     const stats = titulares.map(player => {
       const playerMatches = playedMatches.filter(m => {
         const mp = matchPlayers[m.id] || []
         return mp.some(p => p.player_id === player.id && !p.is_free)
       })
 
-      let pg = 0, sets_favor = 0, sets_contra = 0, juegos_favor = 0, juegos_contra = 0
-      const winResults = []
-
+      const details = []  // { won, sf, sc, jf, jc } por partido
       playerMatches.forEach(m => {
         const mp     = matchPlayers[m.id] || []
         const pp     = mp.find(p => p.player_id === player.id)
@@ -154,30 +153,16 @@ export function useData() {
         if (!pp || !result) return
 
         const won = result.winner_team === pp.team
-        if (won) pg++
-        winResults.push(won ? 1 : 0)
-
         const { sets_t1, sets_t2, juegos_t1, juegos_t2 } = db.calcSetsStats(result)
-        if (pp.team === 1) {
-          sets_favor   += sets_t1;   sets_contra  += sets_t2
-          juegos_favor += juegos_t1; juegos_contra += juegos_t2
-        } else {
-          sets_favor   += sets_t2;   sets_contra  += sets_t1
-          juegos_favor += juegos_t2; juegos_contra += juegos_t1
-        }
+        const [sf, sc, jf, jc] = pp.team === 1
+          ? [sets_t1, sets_t2, juegos_t1, juegos_t2]
+          : [sets_t2, sets_t1, juegos_t2, juegos_t1]
+        details.push({ won, sf, sc, jf, jc })
       })
 
-      const pj         = playerMatches.length
-      const pp_val     = pj - pg
-      const sets_diff  = sets_favor - sets_contra
-      const juegos_diff = juegos_favor - juegos_contra
-
-      return {
-        player, pj, pg, pp: pp_val,
-        sets_favor, sets_contra, sets_diff,
-        juegos_favor, juegos_contra, juegos_diff,
-        ptsTotal: pg, winResults, playerMatches,
-      }
+      const pj = playerMatches.length
+      const pg = details.filter(d => d.won).length
+      return { player, pj, pg, pp: pj - pg, details }
     })
 
     const mode  = targetSeason.ranking_mode || 'best_n'
@@ -192,18 +177,43 @@ export function useData() {
     const ranked = stats.map(s => {
       let ptsContados = 0, eligible = true
 
+      // En modo "Mejores N", los puntos Y los desempates (sets/juegos) se calculan
+      // sobre el mismo subconjunto: los N mejores partidos del jugador, rankeados
+      // por victoria → diferencia de sets → diferencia de juegos.
+      const tbDetails = mode === 'best_n'
+        ? [...s.details].sort((a, b) =>
+            (b.won - a.won) ||
+            ((b.sf - b.sc) - (a.sf - a.sc)) ||
+            ((b.jf - b.jc) - (a.jf - a.jc))
+          ).slice(0, bestN)
+        : s.details
+
+      const agg = tbDetails.reduce((acc, d) => ({
+        sf: acc.sf + d.sf, sc: acc.sc + d.sc,
+        jf: acc.jf + d.jf, jc: acc.jc + d.jc,
+      }), { sf: 0, sc: 0, jf: 0, jc: 0 })
+
+      const sets_favor = agg.sf, sets_contra = agg.sc
+      const juegos_favor = agg.jf, juegos_contra = agg.jc
+      const sets_diff = sets_favor - sets_contra
+      const juegos_diff = juegos_favor - juegos_contra
+
       if (mode === 'absolute') {
         ptsContados = s.pg
       } else if (mode === 'winrate') {
         if (s.pj < minPJ) { eligible = false; ptsContados = 0 }
         else ptsContados = s.pj > 0 ? Math.round((s.pg / s.pj) * 100) : 0
       } else if (mode === 'best_n') {
-        const sorted = [...s.winResults].sort((a, b) => b - a).slice(0, bestN)
-        ptsContados  = sorted.reduce((acc, v) => acc + v, 0)
+        ptsContados = tbDetails.filter(d => d.won).length
       }
 
       const winRate = s.pj > 0 ? Math.round((s.pg / s.pj) * 100) : 0
-      return { ...s, ptsContados, eligible, winRate, bestN, officialPlayed }
+      return {
+        player: s.player, pj: s.pj, pg: s.pg, pp: s.pp,
+        sets_favor, sets_contra, sets_diff,
+        juegos_favor, juegos_contra, juegos_diff,
+        ptsTotal: s.pg, ptsContados, eligible, winRate, bestN, officialPlayed,
+      }
     })
 
     return ranked.sort((a, b) => {
