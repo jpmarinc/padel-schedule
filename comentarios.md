@@ -107,6 +107,9 @@ Verificado: el botón "Editar" en Historial abre el formulario pre-cargado, guar
 ### [C-20] Seguir sorteando partidos que no cuentan `✅`
 Se quitó el bloqueo del Sorteo al completar las fechas. Toggle "Amistoso — no cuenta para la temporada" siempre disponible; se fuerza automático si la temporada ya está completa o hay reservas. Nuevo flag `is_friendly` en `padel_matches` (requiere migración en Supabase).
 
+### [C-21] Desempates coherentes con "Mejores N" `✅`
+Mario notó que sus Sets favor/contra sumaban los 9 oficiales aunque los puntos usan los mejores 7. Se corrigió: en modo `best_n`, sets y Δjuegos se calculan sobre el mismo subconjunto de N mejores partidos (rankeados por victoria → dif. sets → dif. juegos). Efecto: Mario pasó a 12-7 (Δ+13) y quedó líder. `useData.js`.
+
 ---
 
 ## Cómo usar este archivo

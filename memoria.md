@@ -33,6 +33,10 @@ La temporada mostraba 12/12 fechas jugadas y el Sorteo bloqueado. Juan Pablo pid
 - **Curación de datos (decisión de Juan Pablo):** se marcaron `is_friendly=true` las 3 fechas con reserva (#2 y #3 con Aland Moyna, #12 con Isleño) vía REST PATCH. Los 9 partidos con 4 titulares quedan oficiales. **Los 12 resultados intactos** (solo se tocó el flag). Badges "Amistoso" confirmados en prod.
 - Temporada quedó: modo `winrate`, `best_n=7` ya seteado (al pasar a "Mejores N" toma los mejores 7, ahora correcto).
 
+### Ajuste extra — desempates coherentes con Mejores N (C-21)
+- Los sets favor/contra y Δjuegos sumaban TODOS los oficiales aunque los puntos usan los mejores N. Se corrigió en `useData.js`: en `best_n`, sets/juegos se agregan sobre el mismo subconjunto de N mejores (ranking por victoria → dif. sets → dif. juegos). Puntos sin cambio (= min(victorias, N)).
+- Efecto en prod (modo Mejores N, N=7): Mario 12-7 (Δ+13) → **líder** por delante de Awad. Resto sin cambios (≤7 oficiales). Verificado en vivo.
+
 ---
 
 ## Sesión 005 — 2026-06-16
