@@ -27,9 +27,11 @@ La temporada mostraba 12/12 fechas jugadas y el Sorteo bloqueado. Juan Pablo pid
 - Sorteo amistoso confirmado → guardado con `is_friendly:true`, `counts_for_points:false`, header no sube. Sin errores de consola.
 - Build limpio.
 
-### Pendiente crítico para deploy
-- **Correr en Supabase antes de deployar:** `ALTER TABLE padel_matches ADD COLUMN IF NOT EXISTS is_friendly BOOLEAN DEFAULT FALSE;` (el código escribe `is_friendly`; sin la columna, upsertMatch falla en producción).
-- No se pusheó — a la espera de revisión de Juan Pablo.
+### Deploy y curación de datos (hecho)
+- **Migración corrida en Supabase:** `ALTER TABLE padel_matches ADD COLUMN IF NOT EXISTS is_friendly BOOLEAN DEFAULT FALSE;` → OK.
+- **Push a `main`** (commit `feat: solo cuentan fechas oficiales…`); Netlify auto-deployó. Verificado en prod: header **9/12**.
+- **Curación de datos (decisión de Juan Pablo):** se marcaron `is_friendly=true` las 3 fechas con reserva (#2 y #3 con Aland Moyna, #12 con Isleño) vía REST PATCH. Los 9 partidos con 4 titulares quedan oficiales. **Los 12 resultados intactos** (solo se tocó el flag). Badges "Amistoso" confirmados en prod.
+- Temporada quedó: modo `winrate`, `best_n=7` ya seteado (al pasar a "Mejores N" toma los mejores 7, ahora correcto).
 
 ---
 
